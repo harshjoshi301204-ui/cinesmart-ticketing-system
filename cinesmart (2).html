@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CineSmart: Intelligent Ticketing System</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cs-bg:#0a0a0f;
+  --cs-surface:#13131c;
+  --cs-surface2:#1c1c2a;
+  --cs-gold:#f5c842;
+  --cs-gold2:#e8a800;
+  --cs-red:#e63946;
+  --cs-text:#f0eee8;
+  --cs-muted:#8886a0;
+  --cs-border:rgba(245,200,66,0.15);
+  --cs-radius:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--cs-bg);color:var(--cs-text);font-family:'DM Sans',sans-serif;font-size:15px;min-height:100vh}
+.font-display{font-family:'Bebas Neue',sans-serif;letter-spacing:0.05em}
+
+/* ── NAV ── */
+nav.cs-nav{background:rgba(10,10,15,0.97);border-bottom:1px solid var(--cs-border);padding:0 2rem;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:999}
+.cs-logo{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:0.08em;color:var(--cs-gold)}
+.cs-logo span{color:var(--cs-text)}
+nav .nav-links{display:flex;gap:0.5rem;align-items:center}
+nav .nav-links a,.nav-btn{background:none;border:none;color:var(--cs-muted);font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;padding:6px 14px;border-radius:8px;text-decoration:none;transition:all 0.2s}
+nav .nav-links a:hover,.nav-btn:hover{color:var(--cs-text);background:var(--cs-surface2)}
+.nav-btn.active,.nav-btn.gold{background:var(--cs-gold);color:#000;font-weight:600}
+.nav-btn.gold:hover{background:var(--cs-gold2)}
+
+/* ── SCREENS ── */
+.screen{display:none;animation:fadeIn 0.3s ease}
+.screen.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── HERO ── */
+.hero{background:linear-gradient(135deg,#0a0a0f 0%,#1a0a2e 50%,#0a0a0f 100%);padding:80px 2rem 60px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(245,200,66,0.12),transparent);pointer-events:none}
+.hero h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(3rem,8vw,5.5rem);letter-spacing:0.06em;line-height:1;margin-bottom:1rem}
+.hero h1 span{color:var(--cs-gold)}
+.hero p{color:var(--cs-muted);font-size:1.1rem;max-width:560px;margin:0 auto 2rem}
+.city-selector{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:2rem}
+.city-btn{background:var(--cs-surface);border:1px solid var(--cs-border);color:var(--cs-muted);padding:8px 20px;border-radius:999px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;transition:all 0.2s}
+.city-btn:hover,.city-btn.active{background:var(--cs-gold);border-color:var(--cs-gold);color:#000;font-weight:600}
+
+/* ── SECTION HEADERS ── */
+.section-head{padding:2.5rem 2rem 1rem;display:flex;align-items:baseline;gap:1rem}
+.section-head h2{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.05em}
+.section-head .badge-gold{background:var(--cs-gold);color:#000;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;letter-spacing:0.05em}
+
+/* ── MOVIE CARDS ── */
+.movies-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1.5rem;padding:0 2rem 2rem}
+.movie-card{background:var(--cs-surface);border:1px solid var(--cs-border);border-radius:var(--cs-radius);overflow:hidden;cursor:pointer;transition:all 0.25s;position:relative}
+.movie-card:hover{transform:translateY(-4px);border-color:rgba(245,200,66,0.4);box-shadow:0 12px 40px rgba(0,0,0,0.5)}
+.movie-card .poster{width:100%;aspect-ratio:2/3;object-fit:cover;background:var(--cs-surface2);display:flex;align-items:center;justify-content:center;font-size:3rem}
+.movie-card .poster-placeholder{width:100%;aspect-ratio:2/3;display:flex;align-items:center;justify-content:center;font-size:4rem;background:var(--cs-surface2)}
+.movie-card .card-body{padding:14px}
+.movie-card h3{font-size:14px;font-weight:600;line-height:1.3;margin-bottom:4px}
+.movie-card .meta{font-size:12px;color:var(--cs-muted)}
+.movie-card .rating{display:inline-flex;align-items:center;gap:4px;background:rgba(245,200,66,0.15);color:var(--cs-gold);font-size:12px;font-weight:600;padding:2px 8px;border-radius:6px;margin-top:6px}
+.movie-card .category-tag{position:absolute;top:10px;right:10px;background:var(--cs-red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;letter-spacing:0.04em}
+.movie-card .ai-badge{position:absolute;top:10px;left:10px;background:var(--cs-gold);color:#000;font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px}
+
+/* ── THEATRE LISTING ── */
+.theatre-card{background:var(--cs-surface);border:1px solid var(--cs-border);border-radius:var(--cs-radius);padding:1.25rem 1.5rem;margin:0 2rem 1rem;transition:border-color 0.2s}
+.theatre-card:hover{border-color:rgba(245,200,66,0.35)}
+.theatre-card h4{font-weight:600;margin-bottom:4px}
+.theatre-card .address{font-size:13px;color:var(--cs-muted);margin-bottom:12px}
+.show-times{display:flex;flex-wrap:wrap;gap:8px}
+.show-time-btn{background:var(--cs-surface2);border:1px solid var(--cs-border);color:var(--cs-text);padding:6px 14px;border-radius:8px;font-size:13px;cursor:pointer;transition:all 0.2s;font-family:'DM Sans',sans-serif}
+.show-time-btn:hover{background:var(--cs-gold);color:#000;border-color:var(--cs-gold);font-weight:600}
+
+/* ── SEAT MAP ── */
+.seat-map-wrap{padding:2rem;max-width:700px;margin:0 auto}
+.screen-label{background:linear-gradient(to bottom,rgba(245,200,66,0.3),transparent);border-top:3px solid var(--cs-gold);text-align:center;padding:8px;color:var(--cs-muted);font-size:12px;letter-spacing:0.1em;border-radius:4px 4px 0 0;margin-bottom:2rem}
+.seats-grid{display:grid;gap:8px;justify-content:center;margin-bottom:1.5rem}
+.seat{width:34px;height:34px;border-radius:6px 6px 2px 2px;border:1px solid;cursor:pointer;transition:all 0.15s;font-size:9px;display:flex;align-items:center;justify-content:center;font-weight:600;position:relative}
+.seat.available{background:var(--cs-surface2);border-color:rgba(255,255,255,0.15);color:var(--cs-muted)}
+.seat.available:hover{background:rgba(245,200,66,0.2);border-color:var(--cs-gold);color:var(--cs-gold)}
+.seat.selected{background:var(--cs-gold);border-color:var(--cs-gold);color:#000}
+.seat.booked{background:rgba(230,57,70,0.2);border-color:rgba(230,57,70,0.4);color:var(--cs-red);cursor:not-allowed}
+.seat.group-held{background:rgba(80,200,255,0.2);border-color:rgba(80,200,255,0.5);color:#50c8ff;cursor:not-allowed}
+.seat-legend{display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap;margin-bottom:1.5rem}
+.seat-legend .item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--cs-muted)}
+.seat-legend .swatch{width:18px;height:18px;border-radius:4px;border:1px solid}
+.booking-summary{background:var(--cs-surface);border:1px solid var(--cs-border);border-radius:var(--cs-radius);padding:1.25rem 1.5rem}
+.booking-summary h4{margin-bottom:1rem;font-weight:600}
+.summary-row{display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px}
+.summary-row.total{font-weight:700;font-size:16px;border-top:1px solid var(--cs-border);padding-top:10px;margin-top:10px}
+
+/* ── PAYMENT ── */
+.payment-wrap{max-width:480px;margin:2rem auto;padding:0 1.5rem}
+.payment-method{background:var(--cs-surface);border:1px solid var(--cs-border);border-radius:var(--cs-radius);padding:1rem 1.25rem;cursor:pointer;margin-bottom:10px;display:flex;align-items:center;gap:1rem;transition:border-color 0.2s}
+.payment-method:hover,.payment-method.active{border-color:var(--cs-gold)}
+.payment-method .pm-icon{font-size:1.8rem;width:44px;text-align:center}
+.payment-method .pm-name{font-weight:600;font-size:15px}
+.payment-method .pm-desc{font-size:12px;color:var(--cs-muted)}
+.cs-input{background:var(--cs-surface2);border:1px solid var(--cs-border);border-radius:8px;padding:10px 14px;color:var(--cs-text);font-family:'DM Sans',sans-serif;font-size:14px;width:100%;outline:none;transition:border-color 0.2s}
+.cs-input:focus{border-color:var(--cs-gold)}
+.cs-label{font-size:12px;color:var(--cs-muted);margin-bottom:4px;display:block}
+.btn-gold{background:var(--cs-gold);color:#000;font-weight:700;border:none;border-radius:10px;padding:12px 32px;font-family:'DM Sans',sans-serif;font-size:15px;cursor:pointer;transition:all 0.2s;width:100%;margin-top:1rem}
+.btn-gold:hover{background:var(--cs-gold2);transform:translateY(-1px)}
+.btn-outline{background:none;color:var(--cs-text);font-weight:500;border:1px solid var(--cs-border);border-radius:10px;padding:10px 24px;font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;transition:all 0.2s}
+.btn-outline:hover{border-color:var(--cs-gold);color:var(--cs-gold)}
+
+/* ── TICKET ── */
+.ticket-wrap{max-width:460px;margin:2rem auto;padding:0 1.5rem}
+.ticket{background:var(--cs-surface);border:1px solid var(--cs-border);border-radius:16px;overflow:hidden}
+.ticket-header{background:linear-gradient(135deg,#1a0a2e,#0a0a1e);padding:1.5rem;text-align:center;border-bottom:2px dashed rgba(245,200,66,0.3)}
+.ticket-header .movie-title{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.05em;color:var(--cs-gold)}
+.ticket-body{padding:1.5rem}
+.ticket-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid var(--cs-border)}
+.ticket-row:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.ticket-row .label{font-size:11px;color:var(--cs-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px}
+.ticket-row .value{font-weight:600;font-size:15px}
+.ticket-qr{text-align:center;padding:1rem;background:var(--cs-surface2);border-top:2px dashed rgba(245,200,66,0.3)}
+.qr-placeholder{width:80px;height:80px;background:#fff;border-radius:8px;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:2rem}
+
+/* ── AUTH MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:2000;display:flex;align-items:center;justify-content:center;padding:1rem;display:none}
+.modal-overlay.open{display:flex}
+.modal-box{background:var(--cs-surface);border:1px solid var(--cs-border);border-radius:16px;padding:2rem;width:100%;max-width:400px;position:relative}
+.modal-box h2{font-family:'Bebas Neue',sans-serif;font-size:2rem;margin-bottom:1.5rem;letter-spacing:0.05em}
+.auth-tabs{display:flex;gap:0;margin-bottom:1.5rem;background:var(--cs-bg);border-radius:8px;padding:3px}
+.auth-tab{flex:1;padding:8px;text-align:center;border-radius:6px;cursor:pointer;font-size:14px;font-weight:500;color:var(--cs-muted);transition:all 0.2s}
+.auth-tab.active{background:var(--cs-surface2);color:var(--cs-text)}
+.form-group{margin-bottom:1rem}
+.modal-close{position:absolute;top:1rem;right:1rem;background:none;border:none;color:var(--cs-muted);font-size:1.4rem;cursor:pointer;line-height:1}
+
+/* ── CHATBOT ── */
+.chatbot-toggle{position:fixed;bottom:1.5rem;right:1.5rem;z-index:1500;background:var(--cs-gold);color:#000;border:none;width:56px;height:56px;border-radius:50%;font-size:1.4rem;cursor:pointer;box-shadow:0 4px 20px rgba(245,200,66,0.4);transition:transform 0.2s}
+.chatbot-toggle:hover{transform:scale(1.08)}
+.chatbot-panel{position:fixed;bottom:5rem;right:1.5rem;z-index:1500;width:340px;background:var(--cs-surface);border:1px solid var(--cs-border);border-radius:16px;overflow:hidden;display:none;flex-direction:column;max-height:480px;box-shadow:0 12px 40px rgba(0,0,0,0.6)}
+.chatbot-panel.open{display:flex}
+.chat-header{background:var(--cs-surface2);padding:1rem 1.25rem;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--cs-border)}
+.chat-header .avatar{width:36px;height:36px;background:var(--cs-gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:#000}
+.chat-header .title{font-weight:600;font-size:14px}
+.chat-header .subtitle{font-size:11px;color:var(--cs-muted)}
+.chat-messages{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:10px}
+.chat-msg{max-width:85%;padding:9px 13px;border-radius:12px;font-size:13px;line-height:1.5}
+.chat-msg.bot{background:var(--cs-surface2);color:var(--cs-text);align-self:flex-start;border-bottom-left-radius:4px}
+.chat-msg.user{background:var(--cs-gold);color:#000;align-self:flex-end;border-bottom-right-radius:4px;font-weight:500}
+.chat-input-row{padding:10px 12px;border-top:1px solid var(--cs-border);display:flex;gap:8px}
+.chat-input-row input{flex:1;background:var(--cs-bg);border:1px solid var(--cs-border);border-radius:8px;padding:8px 12px;color:var(--cs-text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none}
+.chat-input-row input:focus{border-color:var(--cs-gold)}
+.chat-send{background:var(--cs-gold);border:none;color:#000;border-radius:8px;width:34px;height:34px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center}
+.chat-quick{display:flex;flex-wrap:wrap;gap:6px;padding:0 12px 10px}
+.chat-quick button{background:var(--cs-surface2);border:1px solid var(--cs-border);color:var(--cs-muted);font-size:11px;padding:4px 10px;border-radius:999px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s}
+.chat-quick button:hover{border-color:var(--cs-gold);color:var(--cs-gold)}
+
+/* ── ADMIN ── */
+.admin-sidebar{width:220px;background:var(--cs-surface);border-right:1px solid var(--cs-border);min-height:calc(100vh - 60px);padding:1.5rem 0;position:fixed;top:60px;left:0}
+.admin-sidebar a{display:flex;align-items:center;gap:10px;padding:10px 1.5rem;color:var(--cs-muted);text-decoration:none;font-size:14px;transition:all 0.2s;cursor:pointer}
+.admin-sidebar a:hover,.admin-sidebar a.active{color:var(--cs-text);background:var(--cs-surface2)}
+.admin-sidebar a.active{border-right:3px solid var(--cs-gold)}
+.admin-content{margin-left:220px;padding:2rem}
+.admin-stat-card{background:var(--cs-surface);border:1px solid var(--cs-border);border-radius:var(--cs-radius);padding:1.25rem 1.5rem}
+.admin-stat-card .label{font-size:12px;color:var(--cs-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px}
+.admin-stat-card .value{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:0.05em;color:var(--cs-gold)}
+.admin-stat-card .sub{font-size:12px;color:var(--cs-muted);margin-top:2px}
+.data-table{width:100%;border-collapse:collapse}
+.data-table th{background:var(--cs-surface2);padding:10px 14px;text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:0.06em;color:var(--cs-muted);border-bottom:1px solid var(--cs-border)}
+.data-table td{padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:14px}
+.data-table tr:hover td{background:var(--cs-surface2)}
+.badge-status{font-size:11px;font-weight:600;padding:2px 10px;border-radius:999px}
+.badge-status.confirmed{background:rgba(39,174,96,0.2);color:#2ecc71}
+.badge-status.pending{background:rgba(245,200,66,0.2);color:var(--cs-gold)}
+.badge-status.cancelled{background:rgba(230,57,70,0.2);color:var(--cs-red)}
+.action-btn{background:none;border:1px solid var(--cs-border);color:var(--cs-muted);font-size:12px;padding:3px 10px;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s}
+.action-btn:hover{border-color:var(--cs-gold);color:var(--cs-gold)}
+.action-btn.danger:hover{border-color:var(--cs-red);color:var(--cs-red)}
+
+/* ── GROUP BOOKING ── */
+.group-card{background:var(--cs-surface);border:1px solid var(--cs-border);border-radius:var(--cs-radius);padding:1.5rem;margin-bottom:1rem}
+.group-code{font-family:'Bebas Neue',sans-serif;font-size:3rem;letter-spacing:0.15em;color:var(--cs-gold);text-align:center;padding:1rem;background:var(--cs-surface2);border-radius:10px;margin:1rem 0}
+.member-list{list-style:none;padding:0}
+.member-list li{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--cs-border)}
+.member-list li:last-child{border-bottom:none}
+.member-avatar{width:32px;height:32px;border-radius:50%;background:var(--cs-surface2);display:flex;align-items:center;justify-content:center;font-size:0.85rem;font-weight:700;color:var(--cs-gold)}
+
+/* ── TRAILER MODAL ── */
+.trailer-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:3000;display:none;align-items:center;justify-content:center}
+.trailer-overlay.open{display:flex}
+.trailer-box{width:min(90vw,800px);position:relative}
+.trailer-box iframe{width:100%;aspect-ratio:16/9;border:none;border-radius:12px}
+.trailer-close{position:absolute;top:-40px;right:0;background:none;border:none;color:#fff;font-size:1.6rem;cursor:pointer}
+
+/* ── CATEGORY FILTER ── */
+.cat-filters{display:flex;gap:8px;padding:0 2rem 1.5rem;flex-wrap:wrap}
+.cat-btn{background:var(--cs-surface);border:1px solid var(--cs-border);color:var(--cs-muted);padding:6px 16px;border-radius:999px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s}
+.cat-btn:hover,.cat-btn.active{background:var(--cs-surface2);border-color:rgba(245,200,66,0.4);color:var(--cs-text)}
+
+/* ── NOTIFICATION ── */
+.notif{position:fixed;top:70px;right:1.5rem;z-index:4000;background:var(--cs-surface);border:1px solid rgba(39,174,96,0.4);border-radius:10px;padding:12px 20px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,0.5);transform:translateX(120%);transition:transform 0.3s;max-width:300px}
+.notif.show{transform:translateX(0)}
+.notif.success{border-color:rgba(39,174,96,0.5);color:#2ecc71}
+.notif.error{border-color:rgba(230,57,70,0.5);color:var(--cs-red)}
+.notif.info{border-color:rgba(245,200,66,0.4);color:var(--cs-gold)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  .admin-sidebar{display:none}
+  .admin-content{margin-left:0}
+  .movies-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));padding:0 1rem 2rem}
+  nav.cs-nav{padding:0 1rem}
+  .hero{padding:50px 1rem 40px}
+}
+</style>
+</head>
+<body>
+
+<!-- ── NAVIGATION ── -->
+<nav class="cs-nav">
+  <div class="cs-logo">Cine<span>Smart</span></div>
+  <div class="nav-links">
+    <a href="#" onclick="showScreen('home')">Home</a>
+    <a href="#" onclick="showScreen('movies')">Movies</a>
+    <a href="#" onclick="showScreen('group')">Group Booking</a>
+    <button class="nav-btn" id="navAdminBtn" onclick="showAdminLogin()" style="display:none">Admin</button>
+    <span id="userGreet" style="font-size:13px;color:var(--cs-muted);display:none"></span>
+    <button class="nav-btn gold" id="loginBtn" onclick="openModal('login')">Sign In</button>
+    <button class="nav-btn" id="logoutBtn" onclick="logout()" style="display:none">Sign Out</button>
+  </div>
+</nav>
+
+<!-- ── NOTIFICATION ── -->
+<div class="notif" id="notif"></div>
+
+<!-- ── AUTH MODAL ── -->
+<div class="modal-overlay" id="authModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h2 id="authTitle">Welcome Back</h2>
+    <div class="auth-tabs">
+      <div class="auth-tab active" id="tabLogin" onclick="switchTab('login')">Sign In</div>
+      <div class="auth-tab" id="tabReg" onclick="switchTab('register')">Register</div>
+    </div>
+    <div id="loginForm">
+      <div class="form-group">
+        <label class="cs-label">Email Address</label>
+        <input type="email" class="cs-input" id="loginEmail" placeholder="you@example.com">
+      </div>
+      <div class="form-group">
+        <label class="cs-label">Password</label>
+        <input type="password" class="cs-input" id="loginPass" placeholder="••••••••">
+      </div>
+      <button class="btn-gold" onclick="doLogin()">Sign In</button>
+      <p style="text-align:center;margin-top:1rem;font-size:13px;color:var(--cs-muted)">Demo: user@demo.com / demo123</p>
+    </div>
+    <div id="regForm" style="display:none">
+      <div class="form-group">
+        <label class="cs-label">Full Name</label>
+        <input type="text" class="cs-input" id="regName" placeholder="Arjun Patel">
+      </div>
+      <div class="form-group">
+        <label class="cs-label">Email Address</label>
+        <input type="email" class="cs-input" id="regEmail" placeholder="you@example.com">
+      </div>
+      <div class="form-group">
+        <label class="cs-label">Phone Number</label>
+        <input type="tel" class="cs-input" id="regPhone" placeholder="+91 98765 43210">
+      </div>
+      <div class="form-group">
+        <label class="cs-label">Password</label>
+        <input type="password" class="cs-input" id="regPass" placeholder="Min. 8 characters">
+      </div>
+      <button class="btn-gold" onclick="doRegister()">Create Account</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── ADMIN LOGIN MODAL ── -->
+<div class="modal-overlay" id="adminLoginModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="document.getElementById('adminLoginModal').classList.remove('open')">✕</button>
+    <h2>Admin Login</h2>
+    <div class="form-group">
+      <label class="cs-label">Admin Email</label>
+      <input type="email" class="cs-input" id="adminEmail" placeholder="admin@cinesmart.in">
+    </div>
+    <div class="form-group">
+      <label class="cs-label">Admin Password</label>
+      <input type="password" class="cs-input" id="adminPass" placeholder="••••••••">
+    </div>
+    <button class="btn-gold" onclick="doAdminLogin()">Access Admin Panel</button>
+    <p style="text-align:center;margin-top:1rem;font-size:13px;color:var(--cs-muted)">Demo: admin@cinesmart.in / admin123</p>
+  </div>
+</div>
+
+<!-- ── TRAILER MODAL ── -->
+<div class="trailer-overlay" id="trailerModal">
+  <div class="trailer-box">
+    <button class="trailer-close" onclick="closeTrailer()">✕</button>
+    <iframe id="trailerFrame" allowfullscreen></iframe>
+  </div>
+</div>
+
+<!-- ══════════════════════ SCREENS ══════════════════════ -->
+
+<!-- HOME -->
+<div class="screen active" id="screen-home">
+  <div class="hero">
+    <div style="display:inline-block;background:rgba(245,200,66,0.12);border:1px solid rgba(245,200,66,0.3);border-radius:999px;padding:4px 16px;font-size:12px;color:var(--cs-gold);margin-bottom:1.5rem;letter-spacing:0.08em;text-transform:uppercase">AI-Powered Cinema Experience</div>
+    <h1>Book Smarter,<br><span>Watch Better</span></h1>
+    <p>Intelligent movie recommendations, seamless seat selection, and group bookings — all in one place. Serving Gujarat's best cinemas.</p>
+    <div style="margin-bottom:1rem;font-size:13px;color:var(--cs-muted);text-transform:uppercase;letter-spacing:0.1em">Select Your City</div>
+    <div class="city-selector" id="citySelector">
+      <button class="city-btn" onclick="selectCity('Ahmedabad',this)">🏙 Ahmedabad</button>
+      <button class="city-btn" onclick="selectCity('Gandhinagar',this)">🌆 Gandhinagar</button>
+      <button class="city-btn" onclick="selectCity('Mehsana',this)">🏘 Mehsana</button>
+      <button class="city-btn" onclick="selectCity('Patan',this)">🕌 Patan</button>
+      <button class="city-btn" onclick="selectCity('Surat',this)">💎 Surat</button>
+      <button class="city-btn" onclick="selectCity('Vadodara',this)">🎭 Vadodara</button>
+    </div>
+    <button class="btn-gold" style="width:auto;padding:12px 36px;font-size:16px" onclick="showScreen('movies')">Explore Movies</button>
+  </div>
+
+  <!-- AI RECOMMENDATIONS -->
+  <div class="section-head">
+    <h2>AI Top Picks</h2>
+    <span class="badge-gold">RECOMMENDED</span>
+  </div>
+  <div class="cat-filters" id="homeCatFilters">
+    <button class="cat-btn active" onclick="filterHomeMovies('all',this)">All</button>
+    <button class="cat-btn" onclick="filterHomeMovies('Hollywood',this)">Hollywood</button>
+    <button class="cat-btn" onclick="filterHomeMovies('Bollywood',this)">Bollywood</button>
+    <button class="cat-btn" onclick="filterHomeMovies('South Indian',this)">South Indian</button>
+    <button class="cat-btn" onclick="filterHomeMovies('Gujarati',this)">Gujarati</button>
+  </div>
+  <div class="movies-grid" id="homeMoviesGrid"></div>
+
+  <!-- NOW SHOWING THEATRES -->
+  <div class="section-head" id="theatreSection">
+    <h2 id="theatreHeading">Now Showing</h2>
+    <span class="badge-gold" id="theatreCityBadge">SELECT CITY</span>
+  </div>
+  <div id="theatreList"></div>
+</div>
+
+<!-- MOVIES -->
+<div class="screen" id="screen-movies">
+  <div style="padding:2rem 2rem 0">
+    <h2 style="font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:0.05em">All Movies</h2>
+    <p style="color:var(--cs-muted);margin-top:4px">Browse our full collection</p>
+  </div>
+  <div class="cat-filters" style="padding-top:1rem" id="moviesCatFilters">
+    <button class="cat-btn active" onclick="filterAllMovies('all',this)">All</button>
+    <button class="cat-btn" onclick="filterAllMovies('Hollywood',this)">Hollywood</button>
+    <button class="cat-btn" onclick="filterAllMovies('Bollywood',this)">Bollywood</button>
+    <button class="cat-btn" onclick="filterAllMovies('South Indian',this)">South Indian</button>
+    <button class="cat-btn" onclick="filterAllMovies('Gujarati',this)">Gujarati</button>
+  </div>
+  <div class="movies-grid" id="allMoviesGrid"></div>
+</div>
+
+<!-- SEAT SELECTION -->
+<div class="screen" id="screen-seats">
+  <div style="padding:2rem 2rem 0;display:flex;align-items:center;gap:1rem">
+    <button class="btn-outline" onclick="showScreen('home')">← Back</button>
+    <div>
+      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.05em" id="seatMovieTitle">Select Seats</h2>
+      <p style="color:var(--cs-muted);font-size:13px" id="seatShowInfo"></p>
+    </div>
+  </div>
+  <div class="seat-map-wrap">
+    <div class="screen-label">◀ ──────── SCREEN ──────── ▶</div>
+    <div id="seatsContainer"></div>
+    <div class="seat-legend">
+      <div class="item"><div class="swatch" style="background:var(--cs-surface2);border-color:rgba(255,255,255,0.15)"></div>Available</div>
+      <div class="item"><div class="swatch" style="background:var(--cs-gold);border-color:var(--cs-gold)"></div>Selected</div>
+      <div class="item"><div class="swatch" style="background:rgba(230,57,70,0.2);border-color:rgba(230,57,70,0.4)"></div>Booked</div>
+      <div class="item"><div class="swatch" style="background:rgba(80,200,255,0.2);border-color:rgba(80,200,255,0.5)"></div>Group Hold</div>
+    </div>
+    <div class="booking-summary" id="bookingSummary">
+      <h4>Booking Summary</h4>
+      <div class="summary-row"><span>Movie</span><span id="sumMovie" style="font-weight:600"></span></div>
+      <div class="summary-row"><span>Theatre</span><span id="sumTheatre" style="color:var(--cs-muted);font-size:13px"></span></div>
+      <div class="summary-row"><span>Show</span><span id="sumShow" style="color:var(--cs-muted);font-size:13px"></span></div>
+      <div class="summary-row"><span>Seats</span><span id="sumSeats" style="color:var(--cs-gold)">None selected</span></div>
+      <div class="summary-row"><span>Price/seat</span><span>₹280</span></div>
+      <div class="summary-row total"><span>Total</span><span id="sumTotal">₹0</span></div>
+      <button class="btn-gold" onclick="proceedPayment()">Proceed to Payment</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAYMENT -->
+<div class="screen" id="screen-payment">
+  <div style="padding:2rem 2rem 0;display:flex;align-items:center;gap:1rem">
+    <button class="btn-outline" onclick="showScreen('seats')">← Back</button>
+    <div>
+      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.05em">Secure Payment</h2>
+      <p style="color:var(--cs-muted);font-size:13px" id="paymentAmountLabel"></p>
+    </div>
+  </div>
+  <div class="payment-wrap">
+    <p style="color:var(--cs-muted);font-size:13px;margin-bottom:1.25rem">Choose payment method</p>
+    <div class="payment-method active" id="pm-upi" onclick="selectPayment('upi')">
+      <div class="pm-icon">📲</div>
+      <div><div class="pm-name">UPI Payment</div><div class="pm-desc">PhonePe, GPay, Paytm, BHIM</div></div>
+    </div>
+    <div class="payment-method" id="pm-card" onclick="selectPayment('card')">
+      <div class="pm-icon">💳</div>
+      <div><div class="pm-name">Debit / Credit Card</div><div class="pm-desc">Visa, Mastercard, RuPay</div></div>
+    </div>
+    <div class="payment-method" id="pm-wallet" onclick="selectPayment('wallet')">
+      <div class="pm-icon">👛</div>
+      <div><div class="pm-name">CineSmart Wallet</div><div class="pm-desc">Balance: ₹1,250</div></div>
+    </div>
+    <div id="paymentFields" style="margin-top:1.25rem"></div>
+    <div style="background:var(--cs-surface);border:1px solid var(--cs-border);border-radius:10px;padding:1rem;margin-top:1rem">
+      <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px"><span style="color:var(--cs-muted)">Subtotal</span><span id="paySubtotal"></span></div>
+      <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px"><span style="color:var(--cs-muted)">Convenience Fee</span><span>₹30</span></div>
+      <div style="display:flex;justify-content:space-between;font-weight:700;font-size:16px;border-top:1px solid var(--cs-border);padding-top:8px"><span>Total Payable</span><span id="payTotal" style="color:var(--cs-gold)"></span></div>
+    </div>
+    <button class="btn-gold" onclick="processPayment()">Pay Now 🔒</button>
+    <p style="text-align:center;font-size:11px;color:var(--cs-muted);margin-top:10px">🔒 256-bit SSL encrypted. Your payment is secure.</p>
+  </div>
+</div>
+
+<!-- TICKET -->
+<div class="screen" id="screen-ticket">
+  <div class="ticket-wrap">
+    <div style="text-align:center;margin-bottom:1.5rem">
+      <div style="font-size:3rem;margin-bottom:0.5rem">🎉</div>
+      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.05em">Booking Confirmed!</h2>
+      <p style="color:var(--cs-muted);font-size:14px">Your tickets have been sent to your email</p>
+    </div>
+    <div class="ticket">
+      <div class="ticket-header">
+        <div style="font-size:11px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">CineSmart</div>
+        <div class="movie-title" id="ticketMovie"></div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.6)" id="ticketCategory"></div>
+      </div>
+      <div class="ticket-body">
+        <div class="ticket-row">
+          <div><div class="label">Theatre</div><div class="value" id="ticketTheatre"></div></div>
+          <div style="text-align:right"><div class="label">City</div><div class="value" id="ticketCity"></div></div>
+        </div>
+        <div class="ticket-row">
+          <div><div class="label">Date & Time</div><div class="value" id="ticketShow"></div></div>
+          <div style="text-align:right"><div class="label">Seats</div><div class="value" id="ticketSeats" style="color:var(--cs-gold)"></div></div>
+        </div>
+        <div class="ticket-row">
+          <div><div class="label">Booking ID</div><div class="value" id="ticketId" style="font-family:monospace;font-size:13px"></div></div>
+          <div style="text-align:right"><div class="label">Amount Paid</div><div class="value" id="ticketAmount" style="color:var(--cs-gold)"></div></div>
+        </div>
+      </div>
+      <div class="ticket-qr">
+        <div class="qr-placeholder">▦</div>
+        <div style="font-size:11px;color:var(--cs-muted)">Scan at theatre entrance</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:1.5rem">
+      <button class="btn-outline" style="flex:1" onclick="downloadTicket()">⬇ Download</button>
+      <button class="btn-gold" style="flex:1;margin-top:0" onclick="showScreen('home')">Book Again</button>
+    </div>
+  </div>
+</div>
+
+<!-- GROUP BOOKING -->
+<div class="screen" id="screen-group">
+  <div style="padding:2rem 2rem 0">
+    <h2 style="font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:0.05em">Group Booking</h2>
+    <p style="color:var(--cs-muted);margin-top:4px">Book seats together with friends and family</p>
+  </div>
+  <div style="max-width:600px;padding:2rem">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem">
+      <div class="group-card" style="cursor:pointer;text-align:center" onclick="createGroup()">
+        <div style="font-size:2.5rem;margin-bottom:0.75rem">➕</div>
+        <h4 style="font-weight:600;margin-bottom:4px">Create Group</h4>
+        <p style="font-size:13px;color:var(--cs-muted)">Start a new group booking session</p>
+      </div>
+      <div class="group-card" style="cursor:pointer;text-align:center" onclick="showJoinGroup()">
+        <div style="font-size:2.5rem;margin-bottom:0.75rem">🔗</div>
+        <h4 style="font-weight:600;margin-bottom:4px">Join Group</h4>
+        <p style="font-size:13px;color:var(--cs-muted)">Enter a code to join a session</p>
+      </div>
+    </div>
+    <div id="groupPanel" style="display:none">
+      <div class="group-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem">
+          <h4 style="font-weight:600">Your Group Session</h4>
+          <span class="badge-status confirmed">Active</span>
+        </div>
+        <p style="font-size:13px;color:var(--cs-muted);margin-bottom:0.75rem">Share this code with friends:</p>
+        <div class="group-code" id="groupCodeDisplay"></div>
+        <button class="btn-outline" style="width:100%;margin-top:0.5rem" onclick="copyGroupCode()">📋 Copy Invite Link</button>
+      </div>
+      <div class="group-card">
+        <h4 style="font-weight:600;margin-bottom:1rem">Group Members</h4>
+        <ul class="member-list" id="memberList"></ul>
+        <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--cs-border);font-size:13px;color:var(--cs-muted)">
+          🔒 Seat locking is active. Selected seats are held for 10 minutes.
+        </div>
+      </div>
+      <div class="group-card">
+        <h4 style="font-weight:600;margin-bottom:0.5rem">Collaborative Seat Selection</h4>
+        <p style="font-size:13px;color:var(--cs-muted);margin-bottom:1rem">Each member selects their own seats. Locked seats shown in blue.</p>
+        <button class="btn-gold" onclick="goGroupSeats()">Select Seats Together →</button>
+      </div>
+    </div>
+    <div id="joinGroupPanel" style="display:none">
+      <div class="group-card">
+        <h4 style="font-weight:600;margin-bottom:1rem">Join a Group Session</h4>
+        <div class="form-group">
+          <label class="cs-label">Enter Group Code</label>
+          <input type="text" class="cs-input" id="joinCodeInput" placeholder="e.g. CSM-4729" style="text-transform:uppercase;font-family:monospace;font-size:1.2rem;text-align:center">
+        </div>
+        <button class="btn-gold" onclick="joinGroup()">Join Session</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div class="screen" id="screen-admin">
+  <div class="admin-sidebar">
+    <div style="padding:0 1.5rem 1.5rem;border-bottom:1px solid var(--cs-border);margin-bottom:0.75rem">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:0.06em;color:var(--cs-gold)">Admin Panel</div>
+      <div style="font-size:12px;color:var(--cs-muted)">CineSmart v1.0</div>
+    </div>
+    <a onclick="showAdminTab('dashboard')" id="atab-dashboard" class="active">📊 Dashboard</a>
+    <a onclick="showAdminTab('movies')" id="atab-movies">🎬 Movies</a>
+    <a onclick="showAdminTab('theatres')" id="atab-theatres">🏛 Theatres</a>
+    <a onclick="showAdminTab('bookings')" id="atab-bookings">🎟 Bookings</a>
+    <a onclick="showAdminTab('users')" id="atab-users">👥 Users</a>
+    <div style="margin-top:auto;padding:1.5rem 1.5rem 0">
+      <button class="btn-outline" style="width:100%" onclick="adminLogout()">Sign Out</button>
+    </div>
+  </div>
+  <div class="admin-content">
+    <!-- Dashboard -->
+    <div id="admin-dashboard">
+      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.05em;margin-bottom:1.5rem">Dashboard</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:2rem">
+        <div class="admin-stat-card"><div class="label">Total Bookings</div><div class="value">1,247</div><div class="sub">+12% this week</div></div>
+        <div class="admin-stat-card"><div class="label">Revenue</div><div class="value">₹3.8L</div><div class="sub">This month</div></div>
+        <div class="admin-stat-card"><div class="label">Active Users</div><div class="value">892</div><div class="sub">+5% today</div></div>
+        <div class="admin-stat-card"><div class="label">Movies Listed</div><div class="value" id="adminMovieCount">20</div><div class="sub">4 categories</div></div>
+      </div>
+      <div style="background:var(--cs-surface);border:1px solid var(--cs-border);border-radius:var(--cs-radius);padding:1.5rem">
+        <h4 style="font-weight:600;margin-bottom:1.25rem">Recent Bookings</h4>
+        <table class="data-table">
+          <thead><tr><th>Booking ID</th><th>User</th><th>Movie</th><th>Seats</th><th>Amount</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td style="font-family:monospace;font-size:12px">CS-20241201-001</td><td>Arjun Patel</td><td>Kalki 2898 AD</td><td>E4, E5</td><td>₹590</td><td><span class="badge-status confirmed">Confirmed</span></td></tr>
+            <tr><td style="font-family:monospace;font-size:12px">CS-20241201-002</td><td>Priya Shah</td><td>Stree 2</td><td>B2, B3, B4</td><td>₹870</td><td><span class="badge-status confirmed">Confirmed</span></td></tr>
+            <tr><td style="font-family:monospace;font-size:12px">CS-20241201-003</td><td>Rahul Mehta</td><td>Oppenheimer</td><td>F7</td><td>₹310</td><td><span class="badge-status pending">Pending</span></td></tr>
+            <tr><td style="font-family:monospace;font-size:12px">CS-20241201-004</td><td>Meera Joshi</td><td>RRR</td><td>A1, A2</td><td>₹590</td><td><span class="badge-status confirmed">Confirmed</span></td></tr>
+            <tr><td style="font-family:monospace;font-size:12px">CS-20241201-005</td><td>Dev Solanki</td><td>Chhello Show</td><td>C3</td><td>₹310</td><td><span class="badge-status cancelled">Cancelled</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Movies Admin -->
+    <div id="admin-movies" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+        <h2 style="font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.05em">Manage Movies</h2>
+        <button class="btn-gold" style="width:auto;padding:8px 20px;font-size:14px" onclick="showAddMovieForm()">+ Add Movie</button>
+      </div>
+      <div id="addMovieForm" style="display:none;background:var(--cs-surface);border:1px solid var(--cs-border);border-radius:var(--cs-radius);padding:1.5rem;margin-bottom:1.5rem">
+        <h4 style="font-weight:600;margin-bottom:1rem">Add New Movie</h4>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+          <div class="form-group"><label class="cs-label">Movie Title</label><input type="text" class="cs-input" id="newMovieTitle" placeholder="Enter title"></div>
+          <div class="form-group"><label class="cs-label">Category</label><select class="cs-input" id="newMovieCat"><option>Hollywood</option><option>Bollywood</option><option>South Indian</option><option>Gujarati</option></select></div>
+          <div class="form-group"><label class="cs-label">Rating (0-10)</label><input type="number" class="cs-input" id="newMovieRating" min="0" max="10" step="0.1" placeholder="8.5"></div>
+          <div class="form-group"><label class="cs-label">Genre</label><input type="text" class="cs-input" id="newMovieGenre" placeholder="Action, Drama"></div>
+          <div class="form-group" style="grid-column:1/-1"><label class="cs-label">Description</label><textarea class="cs-input" id="newMovieDesc" rows="3" style="resize:vertical"></textarea></div>
+          <div class="form-group"><label class="cs-label">YouTube Trailer ID</label><input type="text" class="cs-input" id="newMovieTrailer" placeholder="dQw4w9WgXcQ"></div>
+          <div class="form-group"><label class="cs-label">Emoji Poster</label><input type="text" class="cs-input" id="newMovieEmoji" placeholder="🎬"></div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:0.5rem">
+          <button class="btn-gold" style="width:auto;padding:8px 20px;font-size:14px" onclick="addNewMovie()">Add Movie</button>
+          <button class="btn-outline" onclick="document.getElementById('addMovieForm').style.display='none'">Cancel</button>
+        </div>
+      </div>
+      <div style="background:var(--cs-surface);border:1px solid var(--cs-border);border-radius:var(--cs-radius);overflow:auto">
+        <table class="data-table" id="adminMoviesTable">
+          <thead><tr><th>Title</th><th>Category</th><th>Rating</th><th>Genre</th><th>Actions</th></tr></thead>
+          <tbody id="adminMoviesTbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Theatres Admin -->
+    <div id="admin-theatres" style="display:none">
+      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.05em;margin-bottom:1.5rem">Manage Theatres & Shows</h2>
+      <div style="background:var(--cs-surface);border:1px solid var(--cs-border);border-radius:var(--cs-radius);overflow:auto">
+        <table class="data-table">
+          <thead><tr><th>Theatre</th><th>City</th><th>Screens</th><th>Capacity</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="adminTheatresTbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Users Admin -->
+    <div id="admin-users" style="display:none">
+      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.05em;margin-bottom:1.5rem">Registered Users</h2>
+      <div style="background:var(--cs-surface);border:1px solid var(--cs-border);border-radius:var(--cs-radius);overflow:auto">
+        <table class="data-table">
+          <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Bookings</th><th>Joined</th><th>Actions</th></tr></thead>
+          <tbody id="adminUsersTbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Bookings Admin -->
+    <div id="admin-bookings" style="display:none">
+      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.05em;margin-bottom:1.5rem">All Bookings</h2>
+      <div style="background:var(--cs-surface);border:1px solid var(--cs-border);border-radius:var(--cs-radius);overflow:auto">
+        <table class="data-table">
+          <thead><tr><th>Booking ID</th><th>User</th><th>Movie</th><th>Theatre</th><th>Seats</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="adminBookingsTbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── CHATBOT ── -->
+<button class="chatbot-toggle" id="chatbotToggle" onclick="toggleChat()">🤖</button>
+<div class="chatbot-panel" id="chatbotPanel">
+  <div class="chat-header">
+    <div class="avatar">🤖</div>
+    <div><div class="title">Cine AI</div><div class="subtitle">Your smart cinema assistant</div></div>
+    <button style="margin-left:auto;background:none;border:none;color:var(--cs-muted);cursor:pointer;font-size:1.2rem" onclick="toggleChat()">✕</button>
+  </div>
+  <div class="chat-messages" id="chatMessages"></div>
+  <div class="chat-quick" id="chatQuick">
+    <button onclick="sendQuick('What movies are showing?')">🎬 Now showing</button>
+    <button onclick="sendQuick('Recommend a movie for tonight')">⭐ Recommend</button>
+    <button onclick="sendQuick('How do I book tickets?')">❓ How to book</button>
+    <button onclick="sendQuick('Tell me about group booking')">👥 Group booking</button>
+  </div>
+  <div class="chat-input-row">
+    <input type="text" id="chatInput" placeholder="Ask Cine AI anything..." onkeydown="if(event.key==='Enter')sendChat()">
+    <button class="chat-send" onclick="sendChat()">➤</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// ══════════════════════════════════════════
+// DATA STORE
+// ══════════════════════════════════════════
+const MOVIES = [
+  {id:1,title:'Oppenheimer',category:'Hollywood',rating:8.9,genre:'Biography/Drama',emoji:'⚛️',desc:'The story of J. Robert Oppenheimer and the invention of the atomic bomb during WWII. A stunning cinematic achievement.',trailer:'uYPbbksJxIg',ai:true},
+  {id:2,title:'Dune: Part Two',category:'Hollywood',rating:8.7,genre:'Sci-Fi/Epic',emoji:'🏜️',desc:'Paul Atreides unites with the Fremen while seeking revenge against the conspirators who destroyed his family.',trailer:'Way9Dexny3w',ai:true},
+  {id:3,title:'The Batman',category:'Hollywood',rating:8.2,genre:'Action/Crime',emoji:'🦇',desc:'Batman ventures into Gotham City\'s underworld when a sadistic killer leaves behind a trail of cryptic clues.',trailer:'mqqft2x_Aa4',ai:false},
+  {id:4,title:'Avengers: Endgame',category:'Hollywood',rating:8.4,genre:'Action/Superhero',emoji:'🦸',desc:'The Avengers assemble once more in order to undo Thanos\'s actions and restore order to the universe.',trailer:'TcMBFSGVi1c',ai:false},
+  {id:5,title:'Stree 2',category:'Bollywood',rating:8.5,genre:'Horror/Comedy',emoji:'👻',desc:'The spine-chilling sequel to Stree returns with more frights, laughs, and the iconic female spirit in Chanderi.',trailer:'2lKs5R4EqN8',ai:true},
+  {id:6,title:'Kalki 2898 AD',category:'Bollywood',rating:8.3,genre:'Sci-Fi/Mythology',emoji:'🔱',desc:'A futuristic sci-fi epic blending Indian mythology with advanced technology. Prabhas stars as the legendary Kalki.',trailer:'ey_4fVq1Rz0',ai:true},
+  {id:7,title:'Animal',category:'Bollywood',rating:7.9,genre:'Action/Drama',emoji:'🐯',desc:'A devoted son\'s love for his father transforms into obsession and vengeance in this intense action drama.',trailer:'oGUCeUg4l68',ai:false},
+  {id:8,title:'Rocky Aur Rani Ki Prem Kahani',category:'Bollywood',rating:7.8,genre:'Romance/Drama',emoji:'💛',desc:'A quirky love story between a loud Punjabi boy and a sophisticated Bengali girl from opposite worlds.',trailer:'7IFjJi2dn3M',ai:false},
+  {id:9,title:'RRR',category:'South Indian',rating:8.0,genre:'Action/Period',emoji:'🔥',desc:'A fictional story about two legendary freedom fighters and their journey far away from home before they started fighting for their country.',trailer:'f_vbAtFSEc0',ai:true},
+  {id:10,title:'KGF: Chapter 2',category:'South Indian',rating:8.2,genre:'Action/Crime',emoji:'💰',desc:'Rocky faces a greater threat to his empire as Adheera resurfaces. The battle for the gold mines of KGF intensifies.',trailer:'pPiJTRhXXHs',ai:false},
+  {id:11,title:'Pushpa: The Rule',category:'South Indian',rating:8.1,genre:'Action/Thriller',emoji:'🌿',desc:'Pushpa Raj returns stronger than ever as the red sandalwood smuggling kingpin faces off against new and old enemies.',trailer:'0VRZiDdFHgc',ai:true},
+  {id:12,title:'Vikram',category:'South Indian',rating:8.4,genre:'Action/Thriller',emoji:'🎯',desc:'A special agent investigates a series of murders of police officers committed by masked assailants.',trailer:'OKBMCL7Vno8',ai:false},
+  {id:13,title:'Chhello Show',category:'Gujarati',rating:8.3,genre:'Drama/Coming-of-age',emoji:'🎞️',desc:'India\'s official Oscar entry. A young boy\'s love for cinema and the magical last show at a closing theatre in rural Gujarat.',trailer:'6P-OVqcOpjg',ai:true},
+  {id:14,title:'Hellaro',category:'Gujarati',rating:8.1,genre:'Drama/Music',emoji:'🥁',desc:'National Award winning film about a group of women in a remote village who find freedom through Garba dance.',trailer:'8E3p0k0X0qc',ai:false},
+  {id:15,title:'Kevi Rite Jaish',category:'Gujarati',rating:7.5,genre:'Comedy/Drama',emoji:'✈️',desc:'A heartwarming comedy about a Gujarati boy\'s journey to pursue his dreams abroad, balancing family and ambitions.',trailer:'dQw4w9WgXcQ',ai:false},
+  {id:16,title:'Ventilator',category:'Gujarati',rating:7.8,genre:'Drama/Family',emoji:'🏥',desc:'A touching Gujarati film about a family gathering at a hospital while their patriarch fights for his life.',trailer:'dQw4w9WgXcQ',ai:false},
+];
+
+const THEATRES = {
+  Ahmedabad:[
+    {name:'PVR ICON Iscon Megamall',address:'Iscon Megamall, S.G. Highway, Ahmedabad',screens:8,capacity:1200},
+    {name:'INOX Himalaya Mall',address:'Himalaya Mall, Drive-In Road, Ahmedabad',screens:6,capacity:900},
+    {name:'Cinepolis Fun Republic',address:'Fun Republic Mall, Satellite, Ahmedabad',screens:5,capacity:800},
+  ],
+  Gandhinagar:[
+    {name:'PVR Gandhinagar',address:'Gift City Mall, Gandhinagar',screens:4,capacity:600},
+    {name:'INOX Gandhinagar',address:'DLF Mall, Sector 5, Gandhinagar',screens:3,capacity:500},
+  ],
+  Mehsana:[
+    {name:'Cineplex Mehsana',address:'Highway Plaza, Mehsana',screens:3,capacity:450},
+    {name:'Star Cinema',address:'Town Centre, Mehsana',screens:2,capacity:350},
+  ],
+  Patan:[
+    {name:'Patan Talkies',address:'Station Road, Patan',screens:2,capacity:400},
+  ],
+  Surat:[
+    {name:'PVR Surat',address:'VR Surat Mall, Dumas Road, Surat',screens:7,capacity:1000},
+    {name:'INOX Rahul Raj',address:'Rahul Raj Mall, Adajan, Surat',screens:5,capacity:750},
+    {name:'Cinepolis Surat',address:'L&T Nexus Mall, Surat',screens:6,capacity:900},
+  ],
+  Vadodara:[
+    {name:'PVR Vadodara',address:'Alkapuri Arcade, RC Dutt Road, Vadodara',screens:5,capacity:800},
+    {name:'INOX Vadodara',address:'Vadodara Central Mall, Vadodara',screens:4,capacity:600},
+  ],
+};
+
+const SHOWTIMES = ['9:00 AM','11:30 AM','2:30 PM','5:45 PM','9:00 PM'];
+
+const USERS = [
+  {name:'Demo User',email:'user@demo.com',phone:'+91 98765 43210',pass:'demo123',bookings:7,joined:'Nov 2024'},
+  {name:'Arjun Patel',email:'arjun@example.com',phone:'+91 91234 56789',pass:'test123',bookings:4,joined:'Oct 2024'},
+];
+
+let state = {
+  user: null,
+  isAdmin: false,
+  selectedCity: '',
+  selectedMovie: null,
+  selectedTheatre: null,
+  selectedShow: null,
+  selectedSeats: [],
+  bookedSeats: ['A1','B3','C5','D2','D3','E7','F1','F2'],
+  groupSeats: ['B5','B6'],
+  paymentMethod: 'upi',
+  currentBookingId: null,
+  groupCode: null,
+  groupMembers: [],
+};
+
+// ══════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════
+function showScreen(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+name)?.classList.add('active');
+  if(name==='home') renderHomeMovies();
+  if(name==='movies') renderAllMovies();
+  if(name==='admin') renderAdminData();
+  window.scrollTo(0,0);
+}
+
+function notify(msg,type='success'){
+  const el=document.getElementById('notif');
+  el.textContent=msg; el.className='notif '+type;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),3000);
+}
+
+// ══════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════
+function openModal(tab){
+  document.getElementById('authModal').classList.add('open');
+  switchTab(tab||'login');
+}
+function closeModal(){document.getElementById('authModal').classList.remove('open')}
+function switchTab(tab){
+  document.getElementById('loginForm').style.display=tab==='login'?'block':'none';
+  document.getElementById('regForm').style.display=tab==='register'?'block':'none';
+  document.getElementById('tabLogin').classList.toggle('active',tab==='login');
+  document.getElementById('tabReg').classList.toggle('active',tab==='register');
+  document.getElementById('authTitle').textContent=tab==='login'?'Welcome Back':'Create Account';
+}
+function doLogin(){
+  const email=document.getElementById('loginEmail').value;
+  const pass=document.getElementById('loginPass').value;
+  const u=USERS.find(u=>u.email===email&&u.pass===pass);
+  if(!u){notify('Invalid credentials. Try user@demo.com / demo123','error');return;}
+  state.user=u;
+  document.getElementById('loginBtn').style.display='none';
+  document.getElementById('logoutBtn').style.display='inline-block';
+  document.getElementById('userGreet').style.display='inline-block';
+  document.getElementById('userGreet').textContent='Hi, '+u.name.split(' ')[0]+'!';
+  document.getElementById('navAdminBtn').style.display='none';
+  closeModal();
+  notify('Welcome back, '+u.name.split(' ')[0]+'! 🎬');
+}
+function doRegister(){
+  const name=document.getElementById('regName').value.trim();
+  const email=document.getElementById('regEmail').value.trim();
+  const phone=document.getElementById('regPhone').value.trim();
+  const pass=document.getElementById('regPass').value;
+  if(!name||!email||!pass){notify('Please fill all required fields','error');return;}
+  if(pass.length<8){notify('Password must be at least 8 characters','error');return;}
+  const newUser={name,email,phone,pass,bookings:0,joined:'Dec 2024'};
+  USERS.push(newUser);
+  state.user=newUser;
+  document.getElementById('loginBtn').style.display='none';
+  document.getElementById('logoutBtn').style.display='inline-block';
+  document.getElementById('userGreet').style.display='inline-block';
+  document.getElementById('userGreet').textContent='Hi, '+name.split(' ')[0]+'!';
+  closeModal();
+  notify('Account created! Welcome to CineSmart 🎉');
+}
+function logout(){
+  state.user=null; state.isAdmin=false;
+  document.getElementById('loginBtn').style.display='inline-block';
+  document.getElementById('logoutBtn').style.display='none';
+  document.getElementById('userGreet').style.display='none';
+  document.getElementById('navAdminBtn').style.display='none';
+  showScreen('home');
+  notify('Signed out successfully','info');
+}
+function showAdminLogin(){
+  document.getElementById('adminLoginModal').classList.add('open');
+}
+function doAdminLogin(){
+  const e=document.getElementById('adminEmail').value;
+  const p=document.getElementById('adminPass').value;
+  if(e==='admin@cinesmart.in'&&p==='admin123'){
+    state.isAdmin=true;
+    document.getElementById('adminLoginModal').classList.remove('open');
+    document.getElementById('loginBtn').style.display='none';
+    document.getElementById('navAdminBtn').style.display='none';
+    showScreen('admin');
+    notify('Admin access granted 🛡️');
+  } else notify('Invalid admin credentials','error');
+}
+function adminLogout(){
+  state.isAdmin=false;
+  document.getElementById('loginBtn').style.display='inline-block';
+  showScreen('home');
+  notify('Admin signed out','info');
+}
+
+// ── Show Admin button after slight delay for demo purposes
+document.addEventListener('DOMContentLoaded',()=>{
+  setTimeout(()=>{document.getElementById('navAdminBtn').style.display='inline-block'},500);
+  renderHomeMovies();
+  renderChatbotIntro();
+  renderAdminTheatres();
+  renderAdminUsers();
+  renderAdminBookings();
+});
+
+// ══════════════════════════════════════════
+// CITY SELECTION
+// ══════════════════════════════════════════
+function selectCity(city,btn){
+  state.selectedCity=city;
+  document.querySelectorAll('.city-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('theatreCityBadge').textContent=city.toUpperCase();
+  document.getElementById('theatreHeading').textContent='Theatres in '+city;
+  renderTheatres(city);
+  notify('Showing cinemas in '+city+' 📍','info');
+}
+
+function renderTheatres(city){
+  const list=document.getElementById('theatreList');
+  const theatres=THEATRES[city]||[];
+  list.innerHTML=theatres.map(t=>`
+    <div class="theatre-card">
+      <h4>🏛 ${t.name}</h4>
+      <div class="address">📍 ${t.address} &nbsp;•&nbsp; ${t.screens} Screens &nbsp;•&nbsp; ${t.capacity} seats</div>
+      <div class="show-times">
+        ${SHOWTIMES.map(s=>`<button class="show-time-btn" onclick="selectShow('${t.name}','${s}','${city}')">${s}</button>`).join('')}
+      </div>
+    </div>
+  `).join('');
+  if(!theatres.length) list.innerHTML=`<div style="padding:2rem;color:var(--cs-muted);text-align:center">No theatres found for ${city}.</div>`;
+}
+
+// ══════════════════════════════════════════
+// MOVIES
+// ══════════════════════════════════════════
+function renderHomeMovies(cat='all'){
+  const grid=document.getElementById('homeMoviesGrid');
+  const movies=cat==='all'?MOVIES.filter(m=>m.ai):MOVIES.filter(m=>m.ai&&m.category===cat);
+  grid.innerHTML=movies.map(m=>movieCardHTML(m,true)).join('');
+}
+function renderAllMovies(cat='all'){
+  const grid=document.getElementById('allMoviesGrid');
+  const movies=cat==='all'?MOVIES:MOVIES.filter(m=>m.category===cat);
+  grid.innerHTML=movies.map(m=>movieCardHTML(m,false)).join('');
+}
+function movieCardHTML(m,showAI){
+  return`<div class="movie-card" onclick="selectMovieForBooking(${m.id})">
+    <div class="poster-placeholder">${m.emoji}</div>
+    ${showAI&&m.ai?'<div class="ai-badge">AI Pick</div>':''}
+    <div class="category-tag">${m.category}</div>
+    <div class="card-body">
+      <h3>${m.title}</h3>
+      <div class="meta">${m.genre}</div>
+      <div class="rating">★ ${m.rating}</div>
+      <p style="font-size:11px;color:var(--cs-muted);margin-top:8px;line-height:1.5">${m.desc.substring(0,80)}...</p>
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <button onclick="event.stopPropagation();openTrailer('${m.trailer}')" style="background:var(--cs-red);border:none;color:#fff;font-size:11px;padding:3px 10px;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif">▶ Trailer</button>
+        <button onclick="event.stopPropagation();selectMovieForBooking(${m.id})" style="background:var(--cs-gold);border:none;color:#000;font-size:11px;font-weight:600;padding:3px 10px;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif">Book Now</button>
+      </div>
+    </div>
+  </div>`;
+}
+function filterHomeMovies(cat,btn){
+  document.querySelectorAll('#homeCatFilters .cat-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderHomeMovies(cat==='all'?'all':cat);
+}
+function filterAllMovies(cat,btn){
+  document.querySelectorAll('#moviesCatFilters .cat-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAllMovies(cat==='all'?'all':cat);
+}
+
+// ══════════════════════════════════════════
+// BOOKING FLOW
+// ══════════════════════════════════════════
+function selectMovieForBooking(id){
+  if(!state.user){openModal('login');notify('Please sign in to book tickets','info');return;}
+  const movie=MOVIES.find(m=>m.id===id);
+  state.selectedMovie=movie;
+  if(!state.selectedCity){
+    notify('Please select your city first','info');
+    document.getElementById('citySelector').scrollIntoView({behavior:'smooth'});
+    return;
+  }
+  // Auto-pick first theatre
+  const theatres=THEATRES[state.selectedCity];
+  if(!theatres||!theatres.length){notify('No theatres in your city for this movie','error');return;}
+  state.selectedTheatre=theatres[0];
+  state.selectedShow=SHOWTIMES[2];
+  goToSeats();
+}
+function selectShow(theatre,show,city){
+  if(!state.user){openModal('login');notify('Please sign in to book tickets','info');return;}
+  state.selectedCity=city;
+  state.selectedTheatre=THEATRES[city].find(t=>t.name===theatre)||THEATRES[city][0];
+  state.selectedShow=show;
+  if(!state.selectedMovie) state.selectedMovie=MOVIES[Math.floor(Math.random()*MOVIES.length)];
+  goToSeats();
+}
+function goToSeats(){
+  state.selectedSeats=[];
+  document.getElementById('seatMovieTitle').textContent=state.selectedMovie.title;
+  document.getElementById('seatShowInfo').textContent=`${state.selectedTheatre.name} • ${state.selectedShow} • ${state.selectedCity}`;
+  document.getElementById('sumMovie').textContent=state.selectedMovie.title;
+  document.getElementById('sumTheatre').textContent=state.selectedTheatre.name;
+  document.getElementById('sumShow').textContent=state.selectedShow;
+  renderSeatMap();
+  showScreen('seats');
+}
+function renderSeatMap(){
+  const rows=['A','B','C','D','E','F','G','H'];
+  const cols=10;
+  let html='';
+  rows.forEach(row=>{
+    html+=`<div style="display:flex;gap:8px;justify-content:center;margin-bottom:8px">
+      <div style="width:20px;font-size:11px;color:var(--cs-muted);display:flex;align-items:center;font-weight:600">${row}</div>`;
+    for(let c=1;c<=cols;c++){
+      const id=`${row}${c}`;
+      let cls='seat available';
+      if(state.bookedSeats.includes(id)) cls='seat booked';
+      else if(state.groupSeats.includes(id)) cls='seat group-held';
+      html+=`<div class="${cls}" id="seat-${id}" onclick="toggleSeat('${id}')" title="${id}">${id}</div>`;
+    }
+    html+=`<div style="width:6px"></div>`;
+    html+=`</div>`;
+  });
+  document.getElementById('seatsContainer').innerHTML=html;
+}
+function toggleSeat(id){
+  if(state.bookedSeats.includes(id)||state.groupSeats.includes(id)) return;
+  const el=document.getElementById('seat-'+id);
+  if(state.selectedSeats.includes(id)){
+    state.selectedSeats=state.selectedSeats.filter(s=>s!==id);
+    el.classList.remove('selected'); el.classList.add('available');
+  } else {
+    if(state.selectedSeats.length>=8){notify('Maximum 8 seats per booking','error');return;}
+    state.selectedSeats.push(id);
+    el.classList.remove('available'); el.classList.add('selected');
+  }
+  const total=state.selectedSeats.length*280;
+  document.getElementById('sumSeats').textContent=state.selectedSeats.length?state.selectedSeats.join(', '):'None selected';
+  document.getElementById('sumTotal').textContent='₹'+total;
+}
+function proceedPayment(){
+  if(!state.selectedSeats.length){notify('Please select at least one seat','error');return;}
+  const sub=state.selectedSeats.length*280;
+  document.getElementById('paymentAmountLabel').textContent=`${state.selectedSeats.length} seat(s) • ${state.selectedMovie.title}`;
+  document.getElementById('paySubtotal').textContent='₹'+sub;
+  document.getElementById('payTotal').textContent='₹'+(sub+30);
+  renderPaymentFields('upi');
+  showScreen('payment');
+}
+function selectPayment(method){
+  state.paymentMethod=method;
+  document.querySelectorAll('.payment-method').forEach(el=>el.classList.remove('active'));
+  document.getElementById('pm-'+method).classList.add('active');
+  renderPaymentFields(method);
+}
+function renderPaymentFields(method){
+  const el=document.getElementById('paymentFields');
+  if(method==='upi'){
+    el.innerHTML=`<label class="cs-label">UPI ID</label><input type="text" class="cs-input" placeholder="yourname@upi" value="demo@paytm">`;
+  } else if(method==='card'){
+    el.innerHTML=`
+      <div class="form-group"><label class="cs-label">Card Number</label><input type="text" class="cs-input" placeholder="1234 5678 9012 3456" value="4111 1111 1111 1111"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="form-group"><label class="cs-label">Expiry</label><input type="text" class="cs-input" placeholder="MM/YY" value="12/26"></div>
+        <div class="form-group"><label class="cs-label">CVV</label><input type="password" class="cs-input" placeholder="•••" value="123"></div>
+      </div>
+      <div class="form-group"><label class="cs-label">Name on Card</label><input type="text" class="cs-input" placeholder="Your Name" value="${state.user?.name||''}"></div>`;
+  } else {
+    el.innerHTML=`<div style="background:var(--cs-surface2);border-radius:10px;padding:1rem;text-align:center"><div style="font-size:1.5rem;margin-bottom:6px">👛</div><div style="font-weight:600">CineSmart Wallet</div><div style="color:var(--cs-muted);font-size:13px">Balance: ₹1,250 — Sufficient for this booking</div></div>`;
+  }
+}
+function processPayment(){
+  const btn=document.querySelector('#screen-payment .btn-gold');
+  btn.textContent='Processing...'; btn.disabled=true;
+  setTimeout(()=>{
+    // Mark seats as booked
+    state.selectedSeats.forEach(s=>state.bookedSeats.push(s));
+    const bookingId='CS-'+Date.now().toString().slice(-8);
+    state.currentBookingId=bookingId;
+    // Generate ticket
+    document.getElementById('ticketMovie').textContent=state.selectedMovie.title;
+    document.getElementById('ticketCategory').textContent=state.selectedMovie.category+' • '+state.selectedMovie.genre;
+    document.getElementById('ticketTheatre').textContent=state.selectedTheatre.name;
+    document.getElementById('ticketCity').textContent=state.selectedCity;
+    document.getElementById('ticketShow').textContent=new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})+' '+state.selectedShow;
+    document.getElementById('ticketSeats').textContent=state.selectedSeats.join(', ');
+    document.getElementById('ticketId').textContent=bookingId;
+    document.getElementById('ticketAmount').textContent='₹'+(state.selectedSeats.length*280+30);
+    // Add to admin bookings
+    ADMIN_BOOKINGS.unshift({
+      id:bookingId,user:state.user?.name||'Guest',movie:state.selectedMovie.title,
+      theatre:state.selectedTheatre.name,seats:state.selectedSeats.join(', '),
+      amount:'₹'+(state.selectedSeats.length*280+30),status:'confirmed'
+    });
+    btn.textContent='Pay Now 🔒'; btn.disabled=false;
+    notify('Payment successful! Booking confirmed 🎉');
+    showScreen('ticket');
+  },2000);
+}
+function downloadTicket(){notify('Ticket downloaded to your device 📥','info')}
+
+// ══════════════════════════════════════════
+// TRAILER
+// ══════════════════════════════════════════
+function openTrailer(ytId){
+  document.getElementById('trailerFrame').src=`https://www.youtube.com/embed/${ytId}?autoplay=1`;
+  document.getElementById('trailerModal').classList.add('open');
+}
+function closeTrailer(){
+  document.getElementById('trailerFrame').src='';
+  document.getElementById('trailerModal').classList.remove('open');
+}
+
+// ══════════════════════════════════════════
+// GROUP BOOKING
+// ══════════════════════════════════════════
+function createGroup(){
+  if(!state.user){openModal('login');notify('Please sign in to create a group','info');return;}
+  const code='CSM-'+Math.floor(1000+Math.random()*9000);
+  state.groupCode=code;
+  state.groupMembers=[{name:state.user.name,emoji:'👤',status:'Host'}];
+  // Simulate other members joining
+  setTimeout(()=>{
+    state.groupMembers.push({name:'Priya Shah',emoji:'👤',status:'Joined'});
+    renderGroupMembers();
+  },2000);
+  setTimeout(()=>{
+    state.groupMembers.push({name:'Rahul Mehta',emoji:'👤',status:'Joined'});
+    renderGroupMembers();
+  },4000);
+  document.getElementById('groupCodeDisplay').textContent=code;
+  document.getElementById('groupPanel').style.display='block';
+  document.getElementById('joinGroupPanel').style.display='none';
+  renderGroupMembers();
+  notify('Group created! Share the code with friends 🔗','info');
+}
+function renderGroupMembers(){
+  const ul=document.getElementById('memberList');
+  if(!ul) return;
+  ul.innerHTML=state.groupMembers.map((m,i)=>`
+    <li>
+      <div class="member-avatar">${m.name.charAt(0)}</div>
+      <div style="flex:1"><div style="font-size:14px;font-weight:500">${m.name}</div><div style="font-size:11px;color:var(--cs-muted)">${m.status}</div></div>
+      ${i===0?'<span style="font-size:11px;background:rgba(245,200,66,0.15);color:var(--cs-gold);padding:2px 8px;border-radius:999px;font-weight:600">Host</span>':'<span style="font-size:11px;color:#2ecc71">●</span>'}
+    </li>`).join('');
+}
+function showJoinGroup(){
+  document.getElementById('joinGroupPanel').style.display='block';
+  document.getElementById('groupPanel').style.display='none';
+}
+function joinGroup(){
+  const code=document.getElementById('joinCodeInput').value.trim().toUpperCase();
+  if(!code||!code.startsWith('CSM-')){notify('Invalid group code','error');return;}
+  state.groupCode=code;
+  document.getElementById('groupCodeDisplay').textContent=code;
+  state.groupMembers=[{name:'Group Host',emoji:'👤',status:'Host'},{name:state.user?.name||'You',emoji:'👤',status:'Joined'}];
+  document.getElementById('groupPanel').style.display='block';
+  document.getElementById('joinGroupPanel').style.display='none';
+  renderGroupMembers();
+  notify('Joined group session! 🎉');
+}
+function copyGroupCode(){
+  navigator.clipboard?.writeText(`Join my CineSmart group! Code: ${state.groupCode} — https://cinesmart.in/group/${state.groupCode}`);
+  notify('Invite link copied to clipboard 📋','info');
+}
+function goGroupSeats(){
+  if(!state.selectedMovie) state.selectedMovie=MOVIES[0];
+  if(!state.selectedCity) state.selectedCity='Ahmedabad';
+  if(!state.selectedTheatre) state.selectedTheatre=THEATRES.Ahmedabad[0];
+  if(!state.selectedShow) state.selectedShow='5:45 PM';
+  goToSeats();
+}
+
+// ══════════════════════════════════════════
+// ADMIN DATA
+// ══════════════════════════════════════════
+const ADMIN_BOOKINGS = [
+  {id:'CS-20241201-001',user:'Arjun Patel',movie:'Kalki 2898 AD',theatre:'PVR ICON Iscon Megamall',seats:'E4, E5',amount:'₹590',status:'confirmed'},
+  {id:'CS-20241201-002',user:'Priya Shah',movie:'Stree 2',theatre:'INOX Himalaya Mall',seats:'B2, B3, B4',amount:'₹870',status:'confirmed'},
+  {id:'CS-20241201-003',user:'Rahul Mehta',movie:'Oppenheimer',theatre:'PVR Surat',seats:'F7',amount:'₹310',status:'pending'},
+  {id:'CS-20241201-004',user:'Meera Joshi',movie:'RRR',theatre:'Cineplis Fun Republic',seats:'A1, A2',amount:'₹590',status:'confirmed'},
+  {id:'CS-20241201-005',user:'Dev Solanki',movie:'Chhello Show',theatre:'Patan Talkies',seats:'C3',amount:'₹310',status:'cancelled'},
+];
+function renderAdminData(){
+  // Movies table
+  const tbody=document.getElementById('adminMoviesTbody');
+  if(tbody) tbody.innerHTML=MOVIES.map(m=>`
+    <tr>
+      <td>${m.emoji} ${m.title}</td>
+      <td><span class="badge-status confirmed" style="background:rgba(245,200,66,0.1);color:var(--cs-gold)">${m.category}</span></td>
+      <td>★ ${m.rating}</td>
+      <td style="color:var(--cs-muted);font-size:13px">${m.genre}</td>
+      <td><button class="action-btn" onclick="editMovie(${m.id})">Edit</button> <button class="action-btn danger" onclick="deleteMovie(${m.id})">Delete</button></td>
+    </tr>`).join('');
+  document.getElementById('adminMovieCount').textContent=MOVIES.length;
+  renderAdminBookings();
+}
+function renderAdminTheatres(){
+  const tbody=document.getElementById('adminTheatresTbody');
+  if(!tbody) return;
+  const rows=[];
+  Object.entries(THEATRES).forEach(([city,list])=>{
+    list.forEach(t=>{
+      rows.push(`<tr>
+        <td style="font-weight:500">${t.name}</td>
+        <td>${city}</td><td>${t.screens}</td><td>${t.capacity}</td>
+        <td><span class="badge-status confirmed">Active</span></td>
+        <td><button class="action-btn">Edit Shows</button></td>
+      </tr>`);
+    });
+  });
+  tbody.innerHTML=rows.join('');
+}
+function renderAdminUsers(){
+  const tbody=document.getElementById('adminUsersTbody');
+  if(!tbody) return;
+  tbody.innerHTML=USERS.map(u=>`
+    <tr>
+      <td style="font-weight:500">${u.name}</td>
+      <td style="color:var(--cs-muted);font-size:13px">${u.email}</td>
+      <td style="color:var(--cs-muted);font-size:13px">${u.phone||'—'}</td>
+      <td>${u.bookings}</td>
+      <td style="color:var(--cs-muted);font-size:13px">${u.joined}</td>
+      <td><button class="action-btn">View</button> <button class="action-btn danger">Block</button></td>
+    </tr>`).join('');
+}
+function renderAdminBookings(){
+  const tbody=document.getElementById('adminBookingsTbody');
+  if(!tbody) return;
+  tbody.innerHTML=ADMIN_BOOKINGS.map(b=>`
+    <tr>
+      <td style="font-family:monospace;font-size:12px">${b.id}</td>
+      <td>${b.user}</td>
+      <td style="font-weight:500">${b.movie}</td>
+      <td style="color:var(--cs-muted);font-size:12px">${b.theatre}</td>
+      <td style="color:var(--cs-gold)">${b.seats}</td>
+      <td>${b.amount}</td>
+      <td><span class="badge-status ${b.status}">${b.status.charAt(0).toUpperCase()+b.status.slice(1)}</span></td>
+      <td><button class="action-btn">Details</button></td>
+    </tr>`).join('');
+}
+function showAdminTab(tab){
+  ['dashboard','movies','theatres','users','bookings'].forEach(t=>{
+    document.getElementById('admin-'+t).style.display=t===tab?'block':'none';
+    document.getElementById('atab-'+t).classList.toggle('active',t===tab);
+  });
+  if(tab==='movies') renderAdminData();
+  if(tab==='bookings') renderAdminBookings();
+}
+function showAddMovieForm(){document.getElementById('addMovieForm').style.display='block'}
+function addNewMovie(){
+  const title=document.getElementById('newMovieTitle').value.trim();
+  const cat=document.getElementById('newMovieCat').value;
+  const rating=parseFloat(document.getElementById('newMovieRating').value)||8.0;
+  const genre=document.getElementById('newMovieGenre').value||'Drama';
+  const desc=document.getElementById('newMovieDesc').value||'A must-watch film at CineSmart cinemas.';
+  const trailer=document.getElementById('newMovieTrailer').value||'dQw4w9WgXcQ';
+  const emoji=document.getElementById('newMovieEmoji').value||'🎬';
+  if(!title){notify('Please enter a movie title','error');return;}
+  MOVIES.push({id:MOVIES.length+1,title,category:cat,rating,genre,emoji,desc,trailer,ai:false});
+  document.getElementById('addMovieForm').style.display='none';
+  renderAdminData();
+  notify('Movie "'+title+'" added successfully 🎬');
+}
+function editMovie(id){notify('Edit movie #'+id+' — dialog would open here','info')}
+function deleteMovie(id){
+  const idx=MOVIES.findIndex(m=>m.id===id);
+  if(idx>-1){const t=MOVIES[idx].title; MOVIES.splice(idx,1); renderAdminData(); notify('"'+t+'" removed','info');}
+}
+
+// ══════════════════════════════════════════
+// AI CHATBOT
+// ══════════════════════════════════════════
+let chatOpen=false;
+function toggleChat(){
+  chatOpen=!chatOpen;
+  document.getElementById('chatbotPanel').classList.toggle('open',chatOpen);
+  document.getElementById('chatbotToggle').textContent=chatOpen?'✕':'🤖';
+}
+function renderChatbotIntro(){
+  addBotMsg("Hi! I'm Cine AI 🎬 Your intelligent movie assistant. I can help you find movies, check showtimes, or explain how to book tickets. What can I help you with?");
+}
+function addBotMsg(text){
+  const msgs=document.getElementById('chatMessages');
+  const div=document.createElement('div');
+  div.className='chat-msg bot';
+  div.textContent=text;
+  msgs.appendChild(div);
+  msgs.scrollTop=msgs.scrollHeight;
+}
+function addUserMsg(text){
+  const msgs=document.getElementById('chatMessages');
+  const div=document.createElement('div');
+  div.className='chat-msg user';
+  div.textContent=text;
+  msgs.appendChild(div);
+  msgs.scrollTop=msgs.scrollHeight;
+}
+function sendChat(){
+  const inp=document.getElementById('chatInput');
+  const text=inp.value.trim();
+  if(!text) return;
+  inp.value='';
+  addUserMsg(text);
+  setTimeout(()=>addBotMsg(getBotResponse(text)),600);
+}
+function sendQuick(text){
+  document.getElementById('chatQuick').style.display='none';
+  addUserMsg(text);
+  setTimeout(()=>addBotMsg(getBotResponse(text)),600);
+}
+function getBotResponse(msg){
+  const m=msg.toLowerCase();
+  if(m.includes('hello')||m.includes('hi')||m.includes('hey')) return "Hello! 👋 Great to see you at CineSmart! How can I make your movie experience amazing today?";
+  if(m.includes('now showing')||m.includes('what movies')) return `Currently showing: ${MOVIES.slice(0,5).map(m=>m.emoji+' '+m.title).join(', ')} and more! Browse all movies in the Movies section.`;
+  if(m.includes('recommend')||m.includes('suggest')){
+    const picks=MOVIES.filter(m=>m.ai).slice(0,3);
+    return `🌟 My top picks for you tonight: ${picks.map(p=>p.title+' ('+p.rating+'/10)').join(', ')}. All AI-selected based on ratings and viewer sentiment!`;
+  }
+  if(m.includes('book')||m.includes('ticket')||m.includes('how to')){
+    return "Booking is easy! 🎟️\n1. Select your city\n2. Choose a movie\n3. Pick a theatre & showtime\n4. Select seats\n5. Pay securely\n\nYour digital ticket is ready in minutes!";
+  }
+  if(m.includes('group')) return "Group Booking is awesome! 👥 Create a session, share the code with friends, and select seats collaboratively. Up to 8 people can join one group. Find it in the 'Group Booking' menu!";
+  if(m.includes('price')||m.includes('cost')||m.includes('how much')||m.includes('₹')) return "Tickets are priced at ₹280 per seat 🎫 Plus a small ₹30 convenience fee. We accept UPI (GPay, PhonePe, Paytm), Credit/Debit Cards, and CineSmart Wallet!";
+  if(m.includes('city')||m.includes('gujarat')||m.includes('location')) return "We serve 6 cities across Gujarat! 🗺️ Ahmedabad, Gandhinagar, Mehsana, Patan, Surat, and Vadodara. Select your city on the homepage to see nearby theatres.";
+  if(m.includes('ahmedabad')) return "Ahmedabad has 3 top theatres: PVR ICON Iscon Megamall (S.G. Highway), INOX Himalaya Mall (Drive-In Road), and Cinepolis Fun Republic (Satellite)! 🏙️";
+  if(m.includes('bollywood')) return `🎭 Top Bollywood picks: ${MOVIES.filter(m=>m.category==='Bollywood').map(m=>m.title).join(', ')}. All showing in theatres near you!`;
+  if(m.includes('hollywood')) return `🌟 Hollywood highlights: ${MOVIES.filter(m=>m.category==='Hollywood').map(m=>m.title).join(', ')}. Book your seats now!`;
+  if(m.includes('gujarati')) return `🎞️ Gujarati cinema gems: ${MOVIES.filter(m=>m.category==='Gujarati').map(m=>m.title).join(', ')}. Support local cinema!`;
+  if(m.includes('south indian')||m.includes('south')||m.includes('tamil')||m.includes('telugu')) return `🔥 South Indian blockbusters: ${MOVIES.filter(m=>m.category==='South Indian').map(m=>m.title).join(', ')}. All available in multiple languages!`;
+  if(m.includes('cancel')||m.includes('refund')) return "Cancellations are allowed up to 2 hours before showtime. For assistance, contact support@cinesmart.in or call 1800-CINE-SMART. Refunds processed in 3-5 business days.";
+  if(m.includes('timing')||m.includes('showtime')) return "Showtimes available: 9:00 AM, 11:30 AM, 2:30 PM, 5:45 PM, and 9:00 PM — at all partner theatres. Select your city to see live availability!";
+  if(m.includes('admin')) return "The Admin Panel is accessible via the Admin button in the navigation. It allows managing movies, theatres, bookings, and users. Admin credentials are required.";
+  if(m.includes('thank')) return "You're welcome! 😊 Enjoy your movie at CineSmart! Feel free to ask me anything else.";
+  return `Hmm, I'm not sure about that specific query. Try asking me about: 🎬 movies, 📍 cities, 💰 pricing, 🎟️ booking process, or 👥 group booking! I'm always learning.`;
+}
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+renderHomeMovies();
+// Pre-render admin tables for when admin logs in
+setTimeout(()=>{renderAdminTheatres(); renderAdminUsers(); renderAdminBookings();},100);
+</script>
+</body>
+</html>
